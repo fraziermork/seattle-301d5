@@ -41,11 +41,35 @@ Article.loadAll = function(rawData) {
   })
 }
 
+Article.makeAjaxCall = function(){
+  $.ajax({
+    type: 'GET',
+    url: 'data/hackerIpsum.json',
+    success: function(data, message, xhr){
+      console.log('data is');
+      console.log(data);
+      console.log('xhr is');
+      console.log(xhr);
+      var eTag = xhr.getResponseHeader('eTag');
+      console.log('eTag is ' + eTag);
+      localStorage.eTag = eTag;
+      localStorage.rawData = JSON.stringify(data);
+      console.log('localStorage.rawData is');
+      console.log(localStorage.rawData);
+      console.log('JSON.parse(localStorage.rawData) is');
+      console.log(JSON.parse(localStorage.rawData));
+      Article.loadAll(JSON.parse(localStorage.rawData));
+      console.log('Article.all is');
+      console.log(Article.all);
+      articleView.initIndexPage();
+    }
+  })
+}
 // This function will retrieve the data from either a local or remote source,
 // and process it, then hand off control to the View.
 Article.fetchAll = function() {
   if (localStorage.rawData) {
-
+    console.log('something in local storage');
     $.ajax({
       type: 'HEAD',
       url: 'data/hackerIpsum.json',
@@ -54,8 +78,10 @@ Article.fetchAll = function() {
         var eTag = xhr.getResponseHeader('eTag');
         if (! localStorage.eTag || localStorage.eTag  !== eTag){
           localStorage.eTag = eTag;
+          Article.makeAjaxCall();
         } else {
           Article.loadAll(JSON.parse(localStorage.rawData));
+          articleView.initIndexPage()
           //method that will render our index page components
         }
       }
@@ -66,8 +92,11 @@ Article.fetchAll = function() {
     // and then render the index page (using the proper method on the articleView object).
     // Article.loadAll(//TODO: What do we pass in here to the .loadAll function?
     // );
-    articleView.someFunctionToCall; //TODO: What method do we call to render the index page?
+    ; //TODO: What method do we call to render the index page?
   } else {
+    console.log('nothing in localStorage');
+    Article.makeAjaxCall();
+
     // TODO: When we don't already have the rawData,
     // we need to retrieve the JSON file from the server with AJAX (which jQuery method is best for this?),
     // cache it in localStorage so we can skip the server call next time,
